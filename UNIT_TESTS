@@ -1,0 +1,44 @@
+# 🧪 Unit Test Cases – BookStore App
+
+## 1️⃣ ViewModel Tests
+
+### Test Case 1: Loading State
+- **Input:** Call `loadBooks(true)`
+- **Expected Result:** UI state changes to `Loading`
+
+### Test Case 2: Success State (Popular Books)
+- **Input:** Successful API response for popular books
+- **Expected Result:** UI state changes to `Success` with popular books list
+
+### Test Case 3: Success State (New Books)
+- **Input:** Successful API response for new books
+- **Expected Result:** UI state changes to `Success` with new books list
+
+### Test Case 4: Error State
+- **Input:** API failure (no internet / server error)
+- **Expected Result:** UI state changes to `Error` with error message
+
+---
+
+## 2️⃣ Repository Tests
+
+### Test Case 5: Parallel API Call
+- **Input:** Call `fetchBooks()`
+- **Expected Result:** Both APIs are fetched in parallel and combined using `Single.zip`
+
+---
+
+## 3️⃣ UI Behaviour Tests
+
+### Test Case 6: Tab Switching
+- **Input:** Switch between Popular and New tabs
+- **Expected Result:** Correct data displayed without UI flicker
+
+### Test Case 7: Scroll Stability
+- **Input:** Scroll list after data load
+- **Expected Result:** Scroll position remains stable
+
+---
+
+## 📝 Note
+Manual testing was used to verify UI behavior and edge cases.
