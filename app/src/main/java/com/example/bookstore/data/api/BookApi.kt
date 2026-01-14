@@ -6,9 +6,11 @@ import retrofit2.http.GET
 
 interface BookApi {
 
-    @GET("subjects/popular.json")
+    @GET("subjects/fiction.json")
     fun getPopularBooks(): Single<BookResponse>
 
-    @GET("subjects/new.json")
+    @GET("subjects/programming.json")
     fun getNewBooks(): Single<BookResponse>
+
 }
+

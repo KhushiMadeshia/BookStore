@@ -11,63 +11,142 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.Image
+import coil.compose.rememberAsyncImagePainter
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.graphics.Color
+
+
+
+
 
 
 @Composable
 fun HomeScreen(viewModel: HomeViewModel) {
 
-    // 1️⃣ Track which list to show
+
     var showPopular by remember { mutableStateOf(true) }
 
-    // 2️⃣ Trigger API call when screen opens OR tab changes
+
     LaunchedEffect(showPopular) {
         viewModel.loadBooks(showPopular)
     }
 
-    // 3️⃣ Observe state from ViewModel
     val state by viewModel.uiState.collectAsState()
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-        // 🔹 Tabs (Popular / New)
-        Row {
-            Button(
-                onClick = { showPopular = true },
-                modifier = Modifier.padding(end = 8.dp)
-            ) {
-                Text("Popular")
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+
+        Column(
+            modifier = Modifier
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+        ) {
+            Text(
+                text = "BookStore",
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start=2.dp,bottom = 16.dp)
+            )
+
+
+
+
+            // Tabs (Popular / New)
+            Row {
+                Button(
+                    onClick = { showPopular = true },
+                    modifier = Modifier.padding(end = 8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("Popular")
+                }
+
+                Button(
+                    onClick = { showPopular = false },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("New")
+                }
+
             }
 
-            Button(onClick = { showPopular = false }) {
-                Text("New")
-            }
-        }
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // 🔹 UI based on state
-        when (state) {
-            is HomeViewModel.UiState.Loading -> {
-                Text("Loading...")
-            }
+            when (state) {
 
-            is HomeViewModel.UiState.Success -> {
-                val books =
-                    (state as HomeViewModel.UiState.Success).books
+                is HomeViewModel.UiState.Loading -> {
+                    Text("Loading...")
+                }
 
-                LazyColumn {
-                    items(books) { book ->
-                        Text(
-                            text = book.title,
-                            modifier = Modifier.padding(8.dp)
-                        )
+                is HomeViewModel.UiState.Success -> {
+                    val books =
+                        (state as HomeViewModel.UiState.Success).books
+
+                    LazyColumn {
+                        items(books) { book ->
+                            Row(
+                                modifier = Modifier
+                                    .padding(vertical = 8.dp)
+                            ) {
+
+                                book.cover_id?.let { coverId ->
+                                    Image(
+                                        painter = rememberAsyncImagePainter(
+                                            "https://covers.openlibrary.org/b/id/$coverId-M.jpg"
+                                        ),
+                                        contentDescription = book.title,
+                                        modifier = Modifier
+                                            .height(80.dp)
+                                            .padding(start= 3.dp,end = 12.dp)
+                                    )
+                                }
+                            }
+                                Column {
+
+                                    Text(text = book.title)
+
+                                    Text(
+                                        text = book.authors
+                                            ?.firstOrNull()
+                                            ?.name
+                                            ?: "Unknown author"
+                                    )
+                                }
+
+                        }
+                    }
+
+                }
+
+                is HomeViewModel.UiState.Error -> {
+                    val message =
+                        (state as HomeViewModel.UiState.Error).message
+
+                    LaunchedEffect(message) {
+                        scope.launch {
+                            snackbarHostState.showSnackbar(message)
+                        }
                     }
                 }
-            }
-
-            is HomeViewModel.UiState.Error -> {
-                Text(
-                    text = (state as HomeViewModel.UiState.Error).message
-                )
-
             }
         }
     }
